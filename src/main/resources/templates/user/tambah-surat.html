@@ -15,7 +15,7 @@
 	<link href="css/confirm.css" rel="stylesheet" type="text/css">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Mahasiswa | Dashboard</title>
+    <title>Mahasiswa | Tambah Surat</title>
 </head>
 
 <body id="kt_body"
@@ -218,29 +218,111 @@
 
 
 
- 
-                        
-                            <div class="row g-5 g-xl-10">
-                        
-                                <div class="col-xl-12 mb-5 mb-xl-12">
-                                    <div class="card" style="background: #1C325E;">
-                                        <div class="card-body d-flex ps-xl-15">
-                                            <div class="m-0">
-                                                <div class="position-relative fs-2x z-index-2 fw-bolder text-white mb-7">
-                                                    <span class="me-2">Selamat Datang <br>
-                                                        <span class="position-relative d-inline-block text-danger"><span th:text="${session.username}">!!!
-                                                            <span
-                                                                class="position-absolute opacity-50 bottom-0 start-0 border-4 border-danger border-bottom w-100"></span>
-                                                        </span></span>
-                                                    <br />Silahkan Menggunakan Layanan BAAK 14
-                                                </div> 
-                                            </div>
-                                            <img src="assets/media/illustrations/sigma-1/17-dark.png"
-                                                class="position-absolute me-3 bottom-0 end-0 h-200px" alt="" />
-                                        </div>
+                            <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                                <div class="post d-flex flex-column-fluid" id="kt_post">
+                                    <div id="kt_content_container" class="container-xxl">
+                                        <form id="kt_ecommerce_edit_product_form" class="form d-flex flex-column flex-lg-row" th:object="${surat}" th:action="@{/surat/add}" method="post">
+                                            <div class="d-flex flex-column flex-row-fluid gap-7 gap-lg-10">
+                                                <div class="tab-content">
+                                                    <div class="tab-pane fade show active" id="kt_ecommerce_edit_product_general" role="tab-panel">
+                                                        <div class="d-flex flex-column gap-7 gap-lg-12">
+                                                            <div class="card card-flush py-4">
+                                                                <div class="card-header">
+                                                                    <div class="card-title">
+                                                                        <h2>Utama</h2>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body pt-0">
+                                                                    <div class="mb-10 fv-row">
+                                                                        <label class="required form-label">Keterangan Surat</label>
+                                                                        <select name="keteranganSurat" class="form-select mb-2">
+                                                                            <option value="IK">IK</option>
+                                                                            <option value="IB">IB</option>
+                                                                            <option value="Surat">Surat</option>
+                                                                            <option value="Lainnya">Lainnya</option>
+                                                                        </select>
+                                                                        <div class="text-muted fs-7">Pilih Keterangan Surat</div>
+                                                                    </div>
+                                                                </div>   
+                                                                <div class="card-body pt-0">
+                                                                    <div class="mb-10 fv-row">
+                                                                        <label class="required form-label">Start Date</label>
+                                                                        <input type="datetime-local" name="startDate" class="form-control mb-2"/>
+                                                                        <div class="text-muted fs-7">Isi Start Date</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body pt-0">
+                                                                    <div class="mb-10 fv-row">
+                                                                        <label class="required form-label">End Date</label>
+                                                                        <input type="datetime-local" name="endDate" class="form-control mb-2"/>
+                                                                        <div class="text-muted fs-7">Isi End Date</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body pt-0">
+                                                                    <div class="mb-10 fv-row">
+                                                                        <label class="required form-label">Keperluan</label>
+                                                                        <input type="text" name="keperluan" class="form-control mb-2" placeholder="Keperluan"/>
+                                                                        <input type="text" name="idUser" th:value="${session.userId}" />
+                                                                        <input type="text" name="status" class="form-control mb-2" value="diproses" hidden/> 
+                                                                        <div class="text-muted fs-7">Isi Keperluan</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-end">
+                                                    <a href="/user/request-surat" class="btn btn-light me-5">Kembali</a>
+                                                    <button type="submit" id="kt_ecommerce_edit_product_submit" class="btn btn-primary">
+                                                        <span class="indicator-label">Save Changes</span>
+                                                        <span class="indicator-progress d-none">
+                                                            Please wait...
+                                                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div> 
+                                        </form> 
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
+
+                            
+                                        
+                            <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+                            <script>
+                                $(document).ready(function () {
+                                    $("#kt_ecommerce_edit_product_form").submit(function (event) {
+                                        event.preventDefault(); // Prevent the default form submission
+                                
+                                        var data = {
+                                            "keteranganSurat": $("select[name='keteranganSurat']").val(),
+                                            "status": $("input[name='status']").val(),
+                                            "startDate": $("input[name='startDate']").val(),
+                                            "endDate": $("input[name='endDate']").val(),
+                                            "keperluan": $("input[name='keperluan']").val(),
+                                            "idUser": $("input[name='idUser']").val()
+                                        };
+                                
+                                        $.ajax({
+                                            type: "POST", // Use POST method to create a new Surat
+                                            contentType: "application/json",
+                                            url: "http://localhost:8080/surat/add",
+                                            data: JSON.stringify(data),
+                                            dataType: 'json',
+                                            success: function (response) {
+                                                console.log(response);
+                                                window.location.href = "/user/request-surat";
+                                            },
+                                            error: function (error) {
+                                                console.error(error);
+                                                // Handle error, e.g., show an error message
+                                            }
+                                        });
+                                    });
+                                });
+                                
+                            </script>
 
 
 

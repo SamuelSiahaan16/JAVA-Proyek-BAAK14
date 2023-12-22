@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable; 
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
- 
+
 import com.baak14.javabaak14.enums.UserStatus;
 import com.baak14.javabaak14.model.Barang;
-import com.baak14.javabaak14.model.Ruangan; 
+import com.baak14.javabaak14.model.Order;
+import com.baak14.javabaak14.model.Ruangan;
+import com.baak14.javabaak14.model.Surat; 
 
 @Controller
 public class RouteController {
@@ -136,9 +138,127 @@ public class RouteController {
 
     // User Route
     @GetMapping("/user")
-    public String contact() { 
-        return "user/dashboard";
+    public ModelAndView dashboardUser(HttpSession session) {
+        UserStatus role = (UserStatus) session.getAttribute("role");
+        if (role != null && role == UserStatus.mahasiswa) {
+            return new ModelAndView("user/dashboard");
+        } else {
+            return new ModelAndView("redirect:/logout");
+        }
     }
+    
+    //list surat user
+    @GetMapping("/user/request-surat")
+    public ModelAndView listSurat(Model model, HttpSession session) {
+        UserStatus role = (UserStatus) session.getAttribute("role");
+        if (role != null && role == UserStatus.mahasiswa) {
+            try {
+                String apiEndpoint = "http://localhost:8080/surat/list";
+                Surat[] suratList = restTemplateBuilder.build().getForObject(apiEndpoint, Surat[].class);
+                model.addAttribute("suratList", suratList);
+                return new ModelAndView("user/surat");
+            } catch (Exception e) {
+                // Handle exceptions, e.g., log the error and show an error page
+                model.addAttribute("error", "Failed to fetch surat data. Please try again.");
+                return new ModelAndView("user/error");
+            }
+        } else {
+            return new ModelAndView("redirect:/logout");
+        }
+    }
+    
+    //add surat user
+    @GetMapping("/user/surat/tambah")
+    public ModelAndView tambahSurat(Model model,HttpSession session) {
+        UserStatus role = (UserStatus) session.getAttribute("role");
+        if (role != null && role == UserStatus.mahasiswa) {
+        	model.addAttribute("surat", new Surat());
+            return new ModelAndView("user/tambah-surat");
+        } else {
+            return new ModelAndView("redirect:/logout");
+        }
+    }
+    
+    //edti surat user
+    @GetMapping("/user/surat/edit/{id}")
+    public ModelAndView editSurat(@PathVariable int id, Model model, HttpSession session) {
+        UserStatus role = (UserStatus) session.getAttribute("role");
+        if (role != null && role == UserStatus.mahasiswa) {
+            // Panggil API untuk mendapatkan data surat berdasarkan ID
+            String apiUrl = "http://localhost:8080/surat/" + id;
+
+            // Menggunakan RestTemplate untuk memanggil API
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Surat> responseEntity = restTemplate.getForEntity(apiUrl, Surat.class);
+
+            // Cek apakah respons dari API sukses dan data surat ditemukan
+            if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
+                // Data surat dari respons API
+                Surat surat = responseEntity.getBody();
+
+                // Kirim data surat ke halaman edit-surat
+                model.addAttribute("surat", surat);
+
+                return new ModelAndView("user/edit-surat");
+            } else {
+                // Jika tidak ditemukan, redirect ke halaman lain atau tampilkan pesan kesalahan
+                // Anda dapat menyesuaikan ini sesuai kebutuhan
+                return new ModelAndView("redirect:/admin/surat"); // Ganti dengan halaman lain jika perlu
+            }
+        } else {
+            return new ModelAndView("redirect:/logout");
+        }
+    }
+    
+
+	@GetMapping("/user/request-barang")
+	public ModelAndView listBarang(Model model, HttpSession session) {
+	    UserStatus role = (UserStatus) session.getAttribute("role");
+	    Integer userId = (Integer) session.getAttribute("userId"); // Assuming userId is stored in the session as an Integer
+	
+	    if (role != null && role == UserStatus.mahasiswa && userId != null) {
+	        try {
+	            String apiEndpoint = "http://localhost:8080/api/orders/user/" + userId;
+	            Order[] orderList = restTemplateBuilder.build().getForObject(apiEndpoint, Order[].class);
+	            model.addAttribute("orderList", orderList);
+	            return new ModelAndView("user/order");
+	        } catch (Exception e) {
+	            // Handle exceptions, e.g., log the error and show an error page
+	            model.addAttribute("error", "Failed to fetch surat data. Please try again.");
+	            return new ModelAndView("user/error");
+	        }
+	    } else {
+	        return new ModelAndView("redirect:/logout");
+	    }
+	}
+	 
+	@GetMapping("/user/barang/tambah")
+	public ModelAndView tambahOrder(Model model, HttpSession session) {
+	    UserStatus role = (UserStatus) session.getAttribute("role");
+	    if (role != null && role == UserStatus.mahasiswa) {
+	        try {
+	            // Panggil API Barang untuk mendapatkan daftar barang
+	            String apiEndpoint = "http://localhost:8080/barang/list";
+	            Barang[] barangList = restTemplateBuilder.build().getForObject(apiEndpoint, Barang[].class);
+
+	            // Set data barang ke model
+	            model.addAttribute("barangList", barangList);
+	            model.addAttribute("order", new Order()); // Objek Order baru untuk formulir
+
+	            return new ModelAndView("user/tambah-order");
+	        } catch (Exception e) {
+	            // Handle exceptions, e.g., log the error and show an error page
+	            model.addAttribute("error", "Failed to fetch barang data. Please try again.");
+	            return new ModelAndView("user/error");
+	        }
+	    } else {
+	        return new ModelAndView("redirect:/logout");
+	    }
+	}
+
+
+
+    
 
     // Add more methods for other pages or functionality
 }

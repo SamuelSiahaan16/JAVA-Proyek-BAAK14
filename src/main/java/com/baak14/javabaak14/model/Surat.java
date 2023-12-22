@@ -11,7 +11,7 @@ import javax.persistence.Id;
 import com.baak14.javabaak14.enums.JenisSurat;
 import com.baak14.javabaak14.enums.StatusSurat;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Entity
 public class Surat {
@@ -29,10 +29,10 @@ public class Surat {
     private StatusSurat status; // Menggunakan enum StatusSurat
 
     @Column(name = "start_date")
-    private Date startDate;
+    private Timestamp startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private Timestamp endDate;
 
     @Column(name = "keperluan", columnDefinition = "TEXT")
     private String keperluan;
@@ -45,7 +45,7 @@ public class Surat {
     public Surat() {
     }
 
-    public Surat(int id, JenisSurat keteranganSurat, StatusSurat status, Date startDate, Date endDate, String keperluan, int idUser) {
+    public Surat(int id, JenisSurat keteranganSurat, StatusSurat status, Timestamp startDate, Timestamp endDate, String keperluan, int idUser) {
         this.id = id;
         this.keteranganSurat = keteranganSurat;
         this.status = status;
@@ -79,19 +79,19 @@ public class Surat {
         this.status = status;
     }
 
-    public Date getStartDate() {
+    public Timestamp getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(Timestamp startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public Timestamp getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(Timestamp endDate) {
         this.endDate = endDate;
     }
 
