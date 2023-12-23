@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.baak14.javabaak14.enums.BookingStatus;
+import com.baak14.javabaak14.enums.RuanganStatus;
+import com.baak14.javabaak14.model.BookingRuangan;
 import com.baak14.javabaak14.model.Ruangan;
 import com.baak14.javabaak14.service.RuanganService;
 
@@ -80,9 +83,22 @@ public class RuanganController {
                     .body("{\"message\": \"Failed to delete ruangan. Error: " + e.getMessage() + "\"}");
         }
     }
-
+    
     @GetMapping("/searchByStatus")
-    public List<Ruangan> searchRuanganByStatus(@RequestParam String status) {
-        return ruanganService.getRuanganByStatus(status);
+    public ResponseEntity<?> searchRuanganByStatus(@RequestParam String status) {
+        try {
+            RuanganStatus ruanganStatus = RuanganStatus.valueOf(status.toLowerCase());
+            List<Ruangan> result = ruanganService.getRuanganByStatus(ruanganStatus);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid status string, e.g., return a bad request response
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"message\": \"Invalid status value: " + status + "\"}");
+        } catch (Exception e) {
+            // Handle other exceptions, e.g., log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"message\": \"Internal server error: " + e.getMessage() + "\"}");
+        }
     }
+
 }

@@ -4,9 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import com.baak14.javabaak14.enums.JenisSurat;
 import com.baak14.javabaak14.enums.StatusSurat;
@@ -36,11 +39,11 @@ public class Surat {
 
     @Column(name = "keperluan", columnDefinition = "TEXT")
     private String keperluan;
-
+ 
     @Column(name = "id_user")
     private int idUser;
-
-    // Constructors, getters, and setters
+ 
+ 
 
     public Surat() {
     }
@@ -110,4 +113,6 @@ public class Surat {
     public void setIdUser(int idUser) {
         this.idUser = idUser;
     }
+     
+
 }

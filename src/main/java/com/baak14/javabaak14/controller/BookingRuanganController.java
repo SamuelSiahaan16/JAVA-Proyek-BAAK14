@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.baak14.javabaak14.enums.BookingStatus;
 import com.baak14.javabaak14.model.BookingRuangan;
+import com.baak14.javabaak14.model.Order;
 import com.baak14.javabaak14.service.BookingRuanganService;
 
 @RestController
@@ -108,10 +110,23 @@ public class BookingRuanganController {
     // Metode pencarian tambahan sesuai kebutuhan
 
     @GetMapping("/searchByStatus")
-    public ResponseEntity<List<BookingRuangan>> searchBookingRuanganByStatus(@RequestParam String status) {
-        List<BookingRuangan> result = bookingRuanganService.getBookingRuanganByStatus(status);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> searchBookingRuanganByStatus(@RequestParam String status) {
+        try {
+            BookingStatus bookingStatus = BookingStatus.valueOf(status.toLowerCase());
+            List<BookingRuangan> result = bookingRuanganService.getBookingRuanganByStatus(bookingStatus);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid status string, e.g., return a bad request response
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"message\": \"Invalid status value: " + status + "\"}");
+        } catch (Exception e) {
+            // Handle other exceptions, e.g., log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"message\": \"Internal server error: " + e.getMessage() + "\"}");
+        }
     }
+
+
 
     // Metode untuk validasi
     private boolean isValidBookingRuangan(BookingRuangan bookingRuangan) {
@@ -129,4 +144,17 @@ public class BookingRuanganController {
         // If there are conflicting bookings, the new booking is invalid
         return conflictingBookings.isEmpty();
     }
+    
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<BookingRuangan>> getBookingByUserId(@PathVariable Integer userId) {
+        try {
+            List<BookingRuangan> bookingRuanganList = bookingRuanganService.getBookingRuanganByUserId(userId);
+            return new ResponseEntity<>(bookingRuanganList, HttpStatus.OK);
+        } catch (Exception e) {
+            // Handle exceptions, e.g., log the error
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

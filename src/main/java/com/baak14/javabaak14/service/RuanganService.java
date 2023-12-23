@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.baak14.javabaak14.enums.BookingStatus;
+import com.baak14.javabaak14.enums.RuanganStatus;
 import com.baak14.javabaak14.model.Ruangan;
 import com.baak14.javabaak14.repository.RuanganRepository;
 
@@ -16,9 +18,6 @@ public class RuanganService {
     @Autowired
     private RuanganRepository ruanganRepository;
     
-    @Autowired
-    private static RestTemplate restTemplate;
-
     public List<Ruangan> getDaftarRuangan() {
         return ruanganRepository.findAll();
     }
@@ -35,8 +34,8 @@ public class RuanganService {
         ruanganRepository.deleteById(id);
     }
 
-    public List<Ruangan> getRuanganByStatus(String status) {
-        return ruanganRepository.findByStatus(status);
+    public List<Ruangan> getRuanganByStatus(RuanganStatus ruanganStatus) {
+        return ruanganRepository.findByStatus(ruanganStatus);
     }
 
     public void updateRuangan(Ruangan ruangan) {

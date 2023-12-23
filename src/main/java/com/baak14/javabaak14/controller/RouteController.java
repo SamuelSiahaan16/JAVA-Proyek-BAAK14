@@ -1,5 +1,8 @@
 package com.baak14.javabaak14.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +20,11 @@ import com.baak14.javabaak14.enums.UserStatus;
 import com.baak14.javabaak14.model.Barang;
 import com.baak14.javabaak14.model.Order;
 import com.baak14.javabaak14.model.Ruangan;
-import com.baak14.javabaak14.model.Surat; 
+import com.baak14.javabaak14.model.Surat;
+import com.baak14.javabaak14.model.User;
+import com.baak14.javabaak14.model.BookingRuangan; 
+
+import com.baak14.javabaak14.repository.UserRepository;
 
 @Controller
 public class RouteController {
@@ -28,6 +35,10 @@ public class RouteController {
     public RouteController(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplateBuilder = restTemplateBuilder;
     }
+    
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Admin Route
     @GetMapping("/admin")
@@ -127,6 +138,43 @@ public class RouteController {
             return new ModelAndView("redirect:/logout");
         }
     }
+    
+    @GetMapping("/admin/surat")
+    public ModelAndView surat(Model model, HttpSession session) {
+        UserStatus role = (UserStatus) session.getAttribute("role");
+        if (role != null && role == UserStatus.admin) {
+            try {
+                String apiEndpoint = "http://localhost:8080/surat/list";
+                Surat[] suratList = restTemplateBuilder.build().getForObject(apiEndpoint, Surat[].class);
+
+                // Tambahkan logika untuk mengambil data pengguna
+                Map<Integer, User> userMap = new HashMap<>();
+                for (Surat surat : suratList) {
+                    int idUser = surat.getIdUser();
+                    User userData = getUserById(idUser);
+                    userMap.put(idUser, userData);
+                }
+
+                model.addAttribute("userMap", userMap);
+                model.addAttribute("suratList", suratList);
+                return new ModelAndView("admin/surat");
+            } catch (Exception e) {
+                // Handle exceptions, e.g., log the error and show an error page
+                model.addAttribute("error", "Failed to fetch surat data. Please try again.");
+                return new ModelAndView("admin/error");
+            }
+        } else {
+            return new ModelAndView("redirect:/logout");
+        }
+    }
+
+
+
+    public User getUserById(Integer id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    
 
     
 
@@ -246,6 +294,52 @@ public class RouteController {
 	            model.addAttribute("order", new Order()); // Objek Order baru untuk formulir
 
 	            return new ModelAndView("user/tambah-order");
+	        } catch (Exception e) {
+	            // Handle exceptions, e.g., log the error and show an error page
+	            model.addAttribute("error", "Failed to fetch barang data. Please try again.");
+	            return new ModelAndView("user/error");
+	        }
+	    } else {
+	        return new ModelAndView("redirect:/logout");
+	    }
+	}
+	
+	
+	@GetMapping("/user/request-ruangan")
+	public ModelAndView listRuangan(Model model, HttpSession session) {
+	    UserStatus role = (UserStatus) session.getAttribute("role");
+	    Integer userId = (Integer) session.getAttribute("userId"); // Assuming userId is stored in the session as an Integer
+	
+	    if (role != null && role == UserStatus.mahasiswa && userId != null) {
+	        try {
+	            String apiEndpoint = "http://localhost:8080/booking-ruangan/user/" + userId;
+	            BookingRuangan[] ruanganList = restTemplateBuilder.build().getForObject(apiEndpoint, BookingRuangan[].class);
+	            model.addAttribute("ruanganList", ruanganList);
+	            return new ModelAndView("user/ruangan");
+	        } catch (Exception e) {
+	            // Handle exceptions, e.g., log the error and show an error page
+	            model.addAttribute("error", "Failed to fetch surat data. Please try again.");
+	            return new ModelAndView("user/error");
+	        }
+	    } else {
+	        return new ModelAndView("redirect:/logout");
+	    }
+	}
+	
+	@GetMapping("/user/ruangan/tambah")
+	public ModelAndView orderRuangan(Model model, HttpSession session) {
+	    UserStatus role = (UserStatus) session.getAttribute("role");
+	    if (role != null && role == UserStatus.mahasiswa) {
+	        try {
+	            // Panggil API Barang untuk mendapatkan daftar barang
+	            String apiEndpoint = "http://localhost:8080/ruangan/searchByStatus?status=tersedia";
+	            Ruangan[] ruanganList = restTemplateBuilder.build().getForObject(apiEndpoint, Ruangan[].class);
+
+	            // Set data barang ke model
+	            model.addAttribute("ruanganList", ruanganList);
+	            model.addAttribute("ruangan", new BookingRuangan()); // Objek Order baru untuk formulir
+
+	            return new ModelAndView("user/tambah-ruangan");
 	        } catch (Exception e) {
 	            // Handle exceptions, e.g., log the error and show an error page
 	            model.addAttribute("error", "Failed to fetch barang data. Please try again.");
